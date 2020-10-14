@@ -13,20 +13,36 @@ void XYZReader::load(const std::string& filename) {
         std::string line;
         // 1st Line os number of atoms
         if (std::getline(file, line)) {
-            atoms_len = std::stoi(line);
+            m_atoms_len = std::stoi(line);
         }
         // 2nd line Lattice and properties 
         if (std::getline(file, line)) {
-            atoms_desc = line;
+            m_atoms_desc = line;
             //parse_Lattice_properties(atoms_desc, SplitVec);
             std::string buf = "Lattice=\"5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44\" Properties=species:S:1:pos:R:3 Time=0.0";
             parse_Lattice_properties(buf, this->latticeResult, this->propertyResult, this->timeResult);
+
+            parse_properties_col_details(this->propertyResult, this->m_XYZPropertiesList);
         }
 
+        std::vector<std::string> dataLine;
+        long atom_cnt = m_atoms_len;
         while (std::getline(file, line)) {
             // using printf() in all tests for consistency
+            boost::trim_if(line, boost::is_any_of("\t ")); // could also use plain boost::trim
+            boost::split(dataLine, line, boost::is_any_of("\""), boost::token_compress_on);
+
             std::cout << line.c_str() << std::endl;
+            if (atom_cnt < 1) {
+                break;
+            }
+            --atom_cnt;
         }
+            vals = line.split()
+            row = tuple([conv(val) for conv, val in zip(convs, vals)])
+            data.append(row)
+
+
         file.close();
     }
 
@@ -45,7 +61,6 @@ boost::optional<bool> parse_bool(const std::string& instr) {
     }
     return boost::none;
 }
-
 
 void XYZReader::parse_Lattice_properties(std::string& instr, 
     split_vector_type& latticeResult,
@@ -72,12 +87,27 @@ void XYZReader::parse_Lattice_properties(std::string& instr,
         boost::split(dataLine, lattice[1], boost::is_any_of("="), boost::token_compress_on);
         
         boost::split(propertyResult, dataLine[1], boost::is_any_of(":"), boost::token_compress_on);
-        std::vector<std::string> propertyName;
-        std::vector<std::string> propertyType;
-        std::vector<std::string> propertyCols
 
         boost::split(dataLine, lattice[2], boost::is_any_of("="), boost::token_compress_on);
         timeResult = std::stod(dataLine[1]);
     }
+    parse_properties_col_details(propertyResult, this->m_XYZPropertiesList);
 }
 
+void XYZReader::parse_properties_col_details(split_vector_type& propertyResult,
+    std::vector <TXYZProperties>& pXYZPropertiesList) {
+
+    std::vector<std::string> propertyName;
+    std::vector<std::string> propertyType;
+    std::vector<std::string> propertyCols;
+    TXYZProperties tXYZProperties;
+    for (int i=0,j=1,k=2; i < propertyResult.size(); ) {
+        tXYZProperties.names = propertyResult[i];
+        tXYZProperties.dtype = propertyResult[j];
+        tXYZProperties.val = propertyResult[k];
+        i = i + 3;
+        j = j + 3;
+        k = k + 3;
+        pXYZPropertiesList.emplace_back(tXYZProperties);
+    }
+}

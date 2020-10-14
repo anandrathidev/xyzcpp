@@ -10,19 +10,20 @@
 typedef std::vector< std::tuple<char, double, double, double> > ATOM_ARRAY;
 typedef std::vector< std::string > split_vector_type;
 
-struct XYZProperties {
+struct TXYZProperties {
     std::string names;
     std::string dtype;
-    std::string convs;
+    std::string val;
 };
 
 class XYZReader {
-    std::int64_t atoms_len;
-    std::string atoms_desc;
+    std::int64_t m_atoms_len;
+    std::string m_atoms_desc;
     ATOM_ARRAY atoms;
     split_vector_type latticeResult;
     split_vector_type propertyResult;
     double timeResult;
+    std::vector <TXYZProperties> m_XYZPropertiesList;
 
 public:
     void load(const std::string& filename);
@@ -30,6 +31,9 @@ public:
         split_vector_type& latticeResult,
         split_vector_type& propertyResult,
         double& timeResult);
+    void parse_properties_col_details(split_vector_type& propertyResult,
+        std::vector <TXYZProperties>& pXYZPropertiesList);
+
 };
 
 int parse_int(const std::string& instr);
@@ -46,7 +50,7 @@ class XYZHeadParser {
     std::vector<std::string> properties_list;
     std::vector<std::string> dtypes;
     std::vector<std::string> converters;
-
+    std::vector <TXYZProperties> XYZPropertiesList;
 /*
     void parse_properties(const std::vector<std::string>& prop_vec) {
         for name, ptype, cols in zip(fields[::3], fields[1::3], [int(x) for x in fields[2::3]]) :
