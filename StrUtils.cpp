@@ -1,24 +1,52 @@
 
 #include "StrUtils.h"
 
-void split_quoted(const std::string& str, std::vector<std::string>& v) {
-    size_t i = 0, j = 0, begin = 0;
-    while (i < str.size()) {
-        if (str[i] == ' ' || i == 0) {
-            if (i + 1 < str.size() && str[i + 1] == '\"') {
-                j = begin + 1;
-                while (j < str.size() && str[j++] != '\"');
-                v.push_back(std::string(str, begin, j - 1 - i));
-                begin = j - 1;
-                i = j - 1;
-                continue;
-            }
+void move_till_nospace(int& i, const std::string& command) {
+    int len = command.length();
+    while (i < len && (command[i] == ' ' || command[i] == '\t')) i++;
+}
 
-            j = begin + 1;
-            while (j < str.size() && str[j++] != ' ');
-            v.push_back(std::string(str, begin, j - 1 - i - (i ? 1 : 0)));
-            begin = j;
+
+void split_in_args(std::vector<std::string>& qargs, const std::string& command) {
+    int len = command.length();
+    bool qot = false, sqot = false;
+    bool eq = false;
+    int arglen = 0;
+    for (int i = 0; i < len; i++) {
+        move_till_nospace(i, command);
+        int start = i;
+        while (i < len && command[i] != '=')
+            i++;
+        if (command[i] == '=') {
+            i++;
+            move_till_nospace(i, command);
+            bool qot = false, sqot = false;
+            if (command[i] == '"') {
+                qot = true;
+            }
+            else if (command[i] == '\'') sqot = true;
+            if (qot) {
+                i++;
+                while (i < len && command[i] != '"')
+                    i++;
+                if (i < len)
+                    qot = false;
+            }
+            else if (sqot) {
+                i++;
+                while (i < len && command[i] != '\'')
+                    i++;
+                if (i < len)
+                    sqot = false;
+            }
+            else {
+                while (i < len && (command[i] != ' ')) {
+                    i++;
+                }
+            }
+            qargs.push_back(command.substr(start, i));
         }
-        ++i;
     }
 }
+
+

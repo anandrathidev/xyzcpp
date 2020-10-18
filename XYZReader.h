@@ -27,10 +27,13 @@ class XYZReader {
 
 public:
     void load(const std::string& filename);
-    void parse_Lattice_properties(std::string& instr,
+    void XYZReader::parse_Lattice_properties(std::string& instr,
         split_vector_type& latticeResult,
         split_vector_type& propertyResult,
-        double& timeResult);
+        double& energy,
+        double& pbc,
+        double& timeResult
+    );
     void parse_properties_col_details(split_vector_type& propertyResult,
         std::vector <TXYZProperties>& pXYZPropertiesList);
 

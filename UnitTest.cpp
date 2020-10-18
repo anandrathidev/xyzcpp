@@ -1,7 +1,11 @@
 
 #include "XYZReader.h"
+#include <boost/algorithm/string.hpp>
+#include <iostream>
 
 //#include <boost/test/unit_test.hpp>
+#include "StrUtils.h"
+
 bool my_test()
 {
     XYZReader  test_object;
@@ -9,7 +13,11 @@ bool my_test()
     split_vector_type latticeResult;
     split_vector_type propertyResult;
     double timeResult;
-    std::string buf = "Lattice=\"5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44\" Properties=species:S:1:pos:R:3 Time=0.0";
-    test_object.parse_Lattice_properties(buf, latticeResult, propertyResult, timeResult);
+    std::vector< std::string > lattice_properties;
+
+    std::string instr = "Lattice=\"5.44 0.0 0.0 0.0 5.44 0.0 0.0 0.0 5.44\" Properties=species:S:1:pos:R:3 Time=0.0";
+    boost::trim_if(instr, boost::is_any_of("\t ")); // could also use plain boost::trim
+    split_in_args(lattice_properties, instr);
     return true;
 }
+
